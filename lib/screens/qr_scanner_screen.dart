@@ -9,19 +9,37 @@ class QRScannerScreen extends StatefulWidget {
 }
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
+  // Kamera kontrolcüsü
+  final MobileScannerController controller = MobileScannerController();
+  bool isScanned = false;
+
+  @override
+  void dispose() {
+    controller.dispose(); // Ekran kapanırken kamerayı tamamen serbest bırakır
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('QR Kodu Okutun')),
       body: MobileScanner(
-        onDetect: (capture) {
+        controller: controller,
+        onDetect: (capture) async {
+          if (isScanned) return;
+
           final List<Barcode> barcodes = capture.barcodes;
-          for (final barcode in barcodes) {
-            final String? code = barcode.rawValue;
+          if (barcodes.isNotEmpty) {
+            final String? code = barcodes.first.rawValue;
             if (code != null) {
-              // QR Kod okundu! Sonucu bir önceki ekrana gönderiyoruz.
-              Navigator.pop(context, code);
-              break; 
+              isScanned = true;
+              
+              // SİYAH EKRAN ÇÖZÜMÜ: Önce taramayı durdur, sonra çık
+              await controller.stop();
+              
+              if (mounted) {
+                Navigator.pop(context, code);
+              }
             }
           }
         },
