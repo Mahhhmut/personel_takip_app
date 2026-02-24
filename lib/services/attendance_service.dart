@@ -18,4 +18,17 @@ class AttendanceService {
       return false;
     }
   }
+
+  Future<bool> checkOut(int userId) async {
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/attendance/check-out"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": userId}),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
 }
